@@ -1,0 +1,75 @@
+# Publishes n8n-nodes-invoist to npm, with a provenance statement, when a
+# version tag (v0.1.0, v0.2.0, ...) is pushed to this repository.
+#
+# This repository is a mirror: its files are integrations/n8n from Invoist's
+# own repository, pushed by scripts/integrations/n8n.sh --mirror as one
+# commit per release plus its v<version> tag. That tag push is what runs this
+# workflow. Nothing is published from a laptop.
+#
+# n8n requires community nodes to be published from GitHub Actions with npm
+# provenance (since May 1 2026) to be verified. `npm run release` runs
+# `n8n-node release`, which inside GitHub Actions lints, builds and runs
+# `npm publish` with NPM_CONFIG_PROVENANCE=true.
+#
+# One-time setup, on npmjs.com:
+#   - First release: the package doesn't exist yet, so trusted publishing
+#     can't be configured. Create a granular access token that can publish
+#     (scoped to n8n-nodes-invoist once it exists) and store it here as the
+#     NPM_TOKEN Actions secret. The first version still gets provenance.
+#   - Afterwards: package settings > Trusted Publishers > GitHub Actions,
+#     owner invoisthq, repository n8n-nodes-invoist, workflow publish.yml.
+#     Then delete the NPM_TOKEN secret and the token.
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Mints the OIDC token for provenance and trusted publishing.
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org/'
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - name: Update npm
+        run: npm install --global npm@^11.5.1
+
+      - name: The tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match package.json version $version" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Release
+        # Lints, builds and publishes with provenance. With NPM_TOKEN unset,
+        # npm authenticates through trusted publishing instead.
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"; fi
+          npm run release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

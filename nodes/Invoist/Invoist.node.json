@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-invoist.invoist",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Finance & Accounting", "Productivity"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/invoisthq/n8n-nodes-invoist?tab=readme-ov-file#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/invoisthq/n8n-nodes-invoist?tab=readme-ov-file"
+			}
+		]
+	}
+}

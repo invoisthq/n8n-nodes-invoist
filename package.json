@@ -1,0 +1,62 @@
+{
+	"name": "n8n-nodes-invoist",
+	"version": "0.1.0",
+	"description": "Invoist for n8n: read invoices and receipts, work the review queue, and start workflows when documents arrive or are read.",
+	"license": "MIT",
+	"homepage": "https://github.com/invoisthq/n8n-nodes-invoist#readme",
+	"bugs": {
+		"url": "https://github.com/invoisthq/n8n-nodes-invoist/issues"
+	},
+	"keywords": [
+		"n8n-community-node-package",
+		"invoist",
+		"invoices",
+		"receipts",
+		"ocr",
+		"extraction"
+	],
+	"author": {
+		"name": "Invoist",
+		"email": "support@invoi.st",
+		"url": "https://invoi.st"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/invoisthq/n8n-nodes-invoist.git"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"test": "n8n-node build && node --test test/",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": [
+		"dist",
+		"!dist/tsconfig.tsbuildinfo"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/InvoistApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Invoist/Invoist.node.js",
+			"dist/nodes/InvoistTrigger/InvoistTrigger.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "0.54.6",
+		"eslint": "9.39.5",
+		"n8n-workflow": "2.16.0",
+		"prettier": "3.9.10",
+		"typescript": "6.0.3"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}
