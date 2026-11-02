@@ -1,9 +1,16 @@
 # Changelog
 
+## 0.1.2
+
+The same nodes as 0.1.0, and the first version on npm.
+
+- `package.json` sets `publishConfig.access` to `public`. npm only creates a
+  provenance statement for a public package, and refused 0.1.1 without it.
+
 ## 0.1.1
 
-The same nodes as 0.1.0, which never reached npm: its publish workflow
-failed while installing dependencies.
+The same nodes as 0.1.0. Neither version reached npm: 0.1.0's publish
+workflow failed while installing dependencies.
 
 - The publish and CI workflows install with `npm ci --ignore-scripts` and use
   `actions/checkout` and `actions/setup-node` v7. A dependency of
