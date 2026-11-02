@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.1
+
+The same nodes as 0.1.0, which never reached npm: its publish workflow
+failed while installing dependencies.
+
+- The publish and CI workflows install with `npm ci --ignore-scripts` and use
+  `actions/checkout` and `actions/setup-node` v7. A dependency of
+  `n8n-workflow` has no prebuilt binary for the newest Node and failed to
+  compile; the nodes never load it.
+- The tests read the API's spec and its webhook events from `testdata/`, so
+  they run in this repository too, and the live tests default to
+  `https://api.invoi.st`.
+
 ## 0.1.0
 
 The first release.

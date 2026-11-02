@@ -1,0 +1,8 @@
+[
+  "document.created",
+  "document_request.fulfilled",
+  "extraction.completed",
+  "extraction.failed",
+  "review_item.created",
+  "review_item.resolved"
+]

@@ -2,8 +2,8 @@
 
 // Runs the built nodes (dist/) the way n8n would call them, with n8n's
 // helpers replaced by small fakes. Offline by default; set INVOIST_TEST_KEY
-// (and INVOIST_TEST_URL, default http://localhost:8081) to also run them
-// against a live API. Plain JavaScript on purpose: the package's linter
+// (and INVOIST_TEST_URL for a server other than https://api.invoi.st) to also
+// run them against a live API. Plain JavaScript on purpose: the package's linter
 // covers the shipped TypeScript, and tests are never part of the package.
 
 const assert = require('node:assert');
@@ -17,14 +17,12 @@ const { InvoistApi } = require('../dist/credentials/InvoistApi.credentials');
 const { multipartFile } = require('../dist/nodes/shared/transport');
 
 const KEY = process.env.INVOIST_TEST_KEY ?? '';
-const LIVE_URL = process.env.INVOIST_TEST_URL ?? 'http://localhost:8081';
+const LIVE_URL = process.env.INVOIST_TEST_URL ?? 'https://api.invoi.st';
 
-// The monorepo's contract and dispatcher, when the tests run inside it (the
-// public mirror has neither, and skips those checks).
-const REPO = path.resolve(__dirname, '../../..');
-const OPENAPI = path.join(REPO, 'app/backend/openapi.yaml');
-const BACKEND = path.join(REPO, 'app/backend/internal');
-const inMonorepo = fs.existsSync(OPENAPI);
+// The API's spec, and the webhook events it sends: copies kept in testdata/
+// and refreshed with every release.
+const OPENAPI = path.join(__dirname, '..', 'testdata', 'openapi.yaml');
+const EVENTS = path.join(__dirname, '..', 'testdata', 'webhook-events.json');
 
 const DOC_ID = '01a02f72-4dc2-758e-ab61-44254e5ee7f3';
 const EXT_ID = '01a02f72-4dd4-7dbd-93c2-fff893267199';
@@ -151,7 +149,7 @@ function hookCtx(calls, staticData, events, live = false) {
 const OPERATIONS = [
 	{ resource: 'document', operation: 'extract', binaryProperty: 'data' },
 	{ resource: 'document', operation: 'get', documentId: DOC_ID },
-	{ resource: 'document', operation: 'getAll', limit: 5, filters: { status: 'done', q: 'helen', flagged: true } },
+	{ resource: 'document', operation: 'getAll', limit: 5, filters: { status: 'done', q: 'northwind', flagged: true } },
 	{ resource: 'reviewItem', operation: 'getAll', reviewStatus: 'pending' },
 	{ resource: 'reviewItem', operation: 'getAll', reviewStatus: 'all' },
 	{ resource: 'reviewItem', operation: 'resolve', reviewItemId: ITEM_ID, status: 'dismissed' },
@@ -191,7 +189,7 @@ test('nodes and credential are wired for n8n', () => {
 	}
 });
 
-test('every request is an operation in openapi.yaml', { skip: !inMonorepo && 'openapi.yaml not found' }, async () => {
+test('every request is an operation in openapi.yaml', async () => {
 	const ops = contractOperations();
 	const calls = await runEverything();
 	assert.equal(calls.length, OPERATIONS.length + 3);
@@ -235,18 +233,8 @@ test('list operations return one item per record', async () => {
 	assert.deepEqual(out[0][1].pairedItem, { item: 0 });
 });
 
-test('trigger events are ones the API sends', { skip: !inMonorepo && 'backend not found' }, () => {
-	const dispatcher = fs.readFileSync(path.join(BACKEND, 'webhooks/dispatcher.go'), 'utf8');
-	const callers = fs
-		.readdirSync(path.join(BACKEND, 'httpapi'))
-		.filter((f) => f.endsWith('.go') && !f.endsWith('_test.go'))
-		.map((f) => fs.readFileSync(path.join(BACKEND, 'httpapi', f), 'utf8'))
-		.join('\n');
-	const sent = new Set(
-		[...dispatcher.matchAll(/(Event\w+)\s*=\s*"([a-z_.]+)"/g)]
-			.filter(([, name]) => callers.includes(`webhooks.${name}`))
-			.map(([, , value]) => value),
-	);
+test('trigger events are ones the API sends', () => {
+	const sent = new Set(JSON.parse(fs.readFileSync(EVENTS, 'utf8')));
 	const offered = new InvoistTrigger().description.properties[0].options.map((o) => o.value);
 	assert.ok(offered.length >= 4);
 	for (const ev of offered) assert.ok(sent.has(ev), `${ev} is never sent by the API`);

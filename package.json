@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-invoist",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Invoist for n8n: read invoices and receipts, work the review queue, and start workflows when documents arrive or are read.",
 	"license": "MIT",
 	"homepage": "https://github.com/invoisthq/n8n-nodes-invoist#readme",

@@ -112,15 +112,14 @@ See [CHANGELOG.md](CHANGELOG.md).
 npm ci
 npm run lint     # n8n's community-node rules (strict mode, as for verification)
 npm test         # builds, then runs the nodes against fakes of n8n and the API
-INVOIST_TEST_KEY=inv_sk_... INVOIST_TEST_URL=http://localhost:8081 npm test   # and a live API
+INVOIST_TEST_KEY=inv_sk_... npm test   # and against the live API (INVOIST_TEST_URL for another server)
 npm run dev      # n8n with this node loaded, rebuilt on change
 ```
 
 ### How releases work
 
-This repository is a mirror of `integrations/n8n` in Invoist's own
-repository, which is where changes are made. A release is one commit here
-with exactly those files, and a `v<version>` tag on it. Pushing the tag runs
+Changes are made in Invoist's own repository and released here: a release
+is one commit with the new files, and a `v<version>` tag on it. Pushing the tag runs
 [`.github/workflows/publish.yml`](.github/workflows/publish.yml), which lints,
 tests, builds and publishes to npm with a provenance statement, as n8n
 requires for verified community nodes. Don't run `npm run release` or
